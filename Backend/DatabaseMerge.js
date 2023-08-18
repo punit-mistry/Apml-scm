@@ -1,6 +1,6 @@
 const { MongoClient } = require('mongodb');
-
-const uri = 'mongodb+srv://data_IT:data_IT@apml.6w5pyjg.mongodb.net/test'; // Your MongoDB URI
+require('dotenv').config();
+const uri = process.env.mongourl; // Your MongoDB URI
 const dbName = 'SIEMENS_GC';
 const Collection1 = "GC";
 const Collection2 = "Live_Tracking";
@@ -13,7 +13,7 @@ async function mergeAndInsert() {
   try {
     await client.connect();
     const db = client.db(dbName);
-
+    // await db.collection(MergedCollection).drop()  
     // Aggregation pipeline to merge data from GC and ChallData collections
     const aggregationPipeline =  [
         {
@@ -65,7 +65,7 @@ async function SecondMergedCollection(){
     try{
       await client.connect();
       const db = client.db(dbName);
-
+      // await db.collection(VehicleWiseMergedCollection).drop()  
       const VehicleWiseAggregator =[
         {
           $lookup: {

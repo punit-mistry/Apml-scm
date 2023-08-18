@@ -2,10 +2,11 @@
 const express = require("express");
 const mongodb = require("mongodb");
 const cors = require("cors"); // Import the cors package
+require('dotenv').config();
 
 var MongoClient = mongodb.MongoClient;
 
-const mongouri = "mongodb+srv://data_IT:data_IT@apml.6w5pyjg.mongodb.net/";
+const mongouri = process.env.mongourl;
 const app = express();
 app.use(cors());
 
@@ -79,6 +80,7 @@ app.get("/Vehicle/get", async (req, res) => {
  }) 
 
   app.listen(port, function () {
+    console.log(mongouri)
     console.log("Server running on port: ", port);
   });
   

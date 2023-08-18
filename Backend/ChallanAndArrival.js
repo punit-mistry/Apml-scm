@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { MongoClient } = require('mongodb');
-
-const uri = 'mongodb+srv://data_IT:data_IT@apml.6w5pyjg.mongodb.net/test'; // Your MongoDB URI
+require('dotenv').config();
+const uri = process.env.mongourl;; // Your MongoDB URI
 const dbName = 'SIEMENS_GC'; // Your database name
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
