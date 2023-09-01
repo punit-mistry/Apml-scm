@@ -51,18 +51,28 @@ function startFetchingData() {
                 Data: response.data.Response[i],
                 FetchDate: `${currentMonthAbbreviation}-${currentYear}`,
                 Status: "", // Initialize the status property
+                ChallanNumber:"", // Initialize the challenge number
               };
-              const intransit = /In Transit/i; // Case-insensitive search
-              const statusMatch = gcStatus.match(intransit);
-              const Pod = /POD Uploaded/i;
-              const PodMatch = gcStatus.match(Pod);
-              const gc_completion = /GC completion/i;
-              const gcCompleted = gcStatus.match(gc_completion);
-              const Stock = /Stock/i;
-              const Available = gcStatus.match(Stock);
+             
               if(gcStatus!=null){
+                const intransit = /In Transit/i; // Case-insensitive search
+                const statusMatch = gcStatus.match(intransit);
+                const Pod = /POD Uploaded/i;
+                const PodMatch = gcStatus.match(Pod);
+                const gc_completion = /GC completion/i;
+                const gcCompleted = gcStatus.match(gc_completion);
+                const Stock = /Stock/i;
+                const Available = gcStatus.match(Stock);
                 if (statusMatch) {
                     obj.Status ="Intransit" ;
+                    const regex = /via\s+(\w+)/;
+                    const match = gcStatus.match(regex);
+                    if (match && match[1]) {
+                      const numberAfterVia = match[1];
+                      obj.ChallanNumber=numberAfterVia; // Output: LCMDDVIJ24111979
+                    } else {
+                      obj.ChallanNumber= "";
+                    }
                   } else if (PodMatch) {
                     obj.Status = "Pod Uploaded";
                   } else if (gcCompleted) {
@@ -70,7 +80,7 @@ function startFetchingData() {
                   } else if (Available) {
                     obj.Status = "Available";
                   } else {
-                    obj.Status = a;
+                    obj.Status = gcStatus;
                   }  
             }
               else{
@@ -92,7 +102,7 @@ function startFetchingData() {
               "this is the final response we want"
             );
             console.log(allResponses[0]);
-            // DataPush(allResponses,CurrentDate_year)
+            DataPush(allResponses,CurrentDate_year)
             resolve(allResponses);
           }
         })
@@ -107,57 +117,57 @@ function startFetchingData() {
   });
 }
 
-// function DataPush(_a,_b) {
-//   const uri = process.env.mongourl;
-// const dbName = "SIEMENS_GC";
-// const collectionName = "GC";
-//   return new Promise((resolve, reject) => {
-//     MongoClient.connect(uri, { useUnifiedTopology: true })
-//       .then((client) => {
-//         console.log("Connected to the MongoDB database");
-//         const db = client.db(dbName);
-//         const collection = db.collection(collectionName);
+function DataPush(_a,_b) {
+  const uri = process.env.mongourl;
+const dbName = "SIEMENS_GC";
+const collectionName = "GC";
+  return new Promise((resolve, reject) => {
+    MongoClient.connect(uri, { useUnifiedTopology: true })
+      .then((client) => {
+        console.log("Connected to the MongoDB database");
+        const db = client.db(dbName);
+        const collection = db.collection(collectionName);
 
-//         const filter = { FetchDate: _b };
+        const filter = { FetchDate: _b };
 
-//         // Delete documents with FetchDate as "Jun-2023"
-//         collection
-//           .deleteMany(filter)
-//           .then(() => {
-//             console.log("Existing data deleted");
+        // Delete documents with FetchDate as "Jun-2023"
+        collection
+          .deleteMany(filter)
+          .then(() => {
+            console.log("Existing data deleted");
 
-//             // Insert the new dataArray into the collection
-//             collection
-//               .insertMany(_a)
-//               .then(() => {
-//                 console.log("New data inserted into the database");
-//                 client.close();
-//                 console.log("Connection to the database closed");
-//                 resolve();
-//               })
-//               .catch((error) => {
-//                 console.error(
-//                   "Error inserting new data into the database:",
-//                   error
-//                 );
-//                 client.close();
-//                 console.log("Connection to the database closed");
-//                 reject(error);
-//               });
-//           })
-//           .catch((error) => {
-//             console.error("Error deleting existing data:", error);
-//             client.close();
-//             console.log("Connection to the database closed");
-//             reject(error);
-//           });
-//       })
-//       .catch((error) => {
-//         console.error("Error connecting to the database:", error);
-//         reject(error);
-//       });
-//   });
-// }
+            // Insert the new dataArray into the collection
+            collection
+              .insertMany(_a)
+              .then(() => {
+                console.log("New data inserted into the database");
+                client.close();
+                console.log("Connection to the database closed");
+                resolve();
+              })
+              .catch((error) => {
+                console.error(
+                  "Error inserting new data into the database:",
+                  error
+                );
+                client.close();
+                console.log("Connection to the database closed");
+                reject(error);
+              });
+          })
+          .catch((error) => {
+            console.error("Error deleting existing data:", error);
+            client.close();
+            console.log("Connection to the database closed");
+            reject(error);
+          });
+      })
+      .catch((error) => {
+        console.error("Error connecting to the database:", error);
+        reject(error);
+      });
+  });
+}
 
 const Ewaybill =()=>{
 

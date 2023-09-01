@@ -32,7 +32,7 @@ async function mergeAndInsert() {
           {
             $lookup: {
               from: "challanData",
-              localField: "Data.THCNO",
+              localField: "ChallanNumber",
               foreignField: "ChallanData.THCNO",
               as: "challanDataResult",
             },
@@ -45,6 +45,7 @@ async function mergeAndInsert() {
               as: "ArrivalDataResult",
             },
           },
+          
         {
             $out: MergedCollection // Output the merged data to the MergedCollection
           }

@@ -2,14 +2,14 @@ FROM node:18
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json .
 
-RUN npm install
+RUN npm install 
 
 COPY . .
 
-ENV PORT=8080
+ENV Port=5050
 
-EXPOSE 8080
+EXPOSE 5050
 
-CMD [ "node", "ApiFetch.js" ]
+CMD ["node","ApiFetch"]
