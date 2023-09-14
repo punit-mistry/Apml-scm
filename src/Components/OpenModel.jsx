@@ -15,9 +15,12 @@ import MapComponent from "./Mapcomponent";
 import HomeIcon from "@mui/icons-material/Home";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import axios from "axios";
+import WhatsAppSender from "./WhatsappSender";
+import uuid from "react-uuid";
+import VehicleUpdate from "./VehicleUpdate";
 const OpenModal = ({ row, setOpen }) => {
   const [Chilopen, setChildOpen] = React.useState(false);
-
+  const [Uuid, setuuid] = useState("");
   const [Status, setStatus] = useState(false);
 
   const receiveDataFromChild = () => {
@@ -96,6 +99,34 @@ const OpenModal = ({ row, setOpen }) => {
     } else {
       return "null ";
     }
+  };
+
+  const UpdateTheStatus = async () => {
+    let data = JSON.stringify({
+      VehicleNumber: row.Data.VehicleNo,
+      VehicleStatus: "AtPickup",
+      uuid: uuid(),
+    });
+
+    let config = {
+      method: "put",
+      maxBodyLength: Infinity,
+      url: `http://localhost:5050/gc/update/${row._id}`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+
+    axios
+      .request(config)
+      .then((response) => {
+        console.log(JSON.stringify(response.data));
+        alert("success");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const style = {
@@ -403,6 +434,22 @@ const OpenModal = ({ row, setOpen }) => {
           <div className=" text-gray-500 p-5  flex flex-col gap-5">
             {" "}
             <h1 className="text-2xl font-bold"> Current Location </h1>
+            <div className="flex gap-5">
+              {/* <input
+                type="text"
+                className=" w-60 border-2 border-black h-10 p-2 rounded-lg"
+                placeholder="Send Whatsapp Message.."
+              />
+              <button className="bg-green-600 p-2 rounded-lg text-white font-bold">
+                💬 Send Message
+              </button> */}
+
+              <WhatsAppSender
+                DriverNumber={
+                  row.VehicleData?.driverData?.Telno || "8286075880"
+                }
+              />
+            </div>
             <div>
               <button className="bg-yellow-300 w-24 text-black rounded-md h-8">
                 {" "}
@@ -432,14 +479,17 @@ const OpenModal = ({ row, setOpen }) => {
               <span>here will be the location showing .....</span>
             </div>
           </div>
-          <div className="border text-gray-500 border-gray-500 rounded-lg h-60 p-5">
-            {" "}
-            <h1 className="text-xl font-bold "> Delivery Info </h1>
-            <br />
-            <p className="text-xl">
-              <span className=" ">Status</span> :- {row?.Data?.GCStatus}
-            </p>
-          </div>
+          {!row.VehicleStatus && (
+            <button className="bg-blue-600 h-10 font-bold text-white rounded-lg ">
+              Update the Status
+            </button>
+          )}
+
+          <VehicleUpdate
+            status={row.VehicleStatus}
+            row={row}
+          />
+          <br />
         </div>
       </div>
       {Status ? (

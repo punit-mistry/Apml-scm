@@ -1,0 +1,20 @@
+2023/09/14-13:14:56.295 2008 Reusing MANIFEST D:\React\APML\Car.c\Backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2023/09/14-13:14:56.295 2008 Recovering log #125
+2023/09/14-13:14:56.345 2008 Reusing old log D:\React\APML\Car.c\Backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000125.log 
+2023/09/14-14:07:21.391 2760 Level-0 table #134: started
+2023/09/14-14:07:21.428 2760 Level-0 table #134: 1121057 bytes OK
+2023/09/14-14:07:21.431 2760 Delete type=0 #125
+2023/09/14-14:14:42.219 2760 Compacting 1@1 + 5@2 files
+2023/09/14-14:14:42.330 2760 Generated table #135@1: 44409 keys, 2208832 bytes
+2023/09/14-14:14:42.368 2760 Generated table #136@1: 4818 keys, 2159900 bytes
+2023/09/14-14:14:42.487 2760 Generated table #137@1: 31835 keys, 2223613 bytes
+2023/09/14-14:14:42.612 2760 Generated table #138@1: 65689 keys, 2207358 bytes
+2023/09/14-14:14:42.677 2760 Generated table #139@1: 46146 keys, 1030777 bytes
+2023/09/14-14:14:42.677 2760 Compacted 1@1 + 5@2 files => 9830480 bytes
+2023/09/14-14:14:42.678 2760 compacted to: files[ 0 0 5 0 0 0 0 ]
+2023/09/14-14:14:42.678 2760 Delete type=2 #127
+2023/09/14-14:14:42.678 2760 Delete type=2 #128
+2023/09/14-14:14:42.678 2760 Delete type=2 #129
+2023/09/14-14:14:42.678 2760 Delete type=2 #130
+2023/09/14-14:14:42.678 2760 Delete type=2 #131
+2023/09/14-14:14:42.678 2760 Delete type=2 #134
