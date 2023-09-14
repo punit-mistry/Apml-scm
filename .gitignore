@@ -11,7 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
-
+./backend/.wwebjs_auth
+./backend/.wwebjs_cache
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
