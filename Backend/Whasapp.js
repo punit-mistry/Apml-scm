@@ -19,10 +19,19 @@ let isWhatsAppReady = false;
 
 app.get('/qrcode', async (req, res) => {
   if (!isWhatsAppReady) {
-    // Generate and display the QR code in the terminal
-    client.on('qr', (qr) => {
-      console.log(qr);
-      qrcode.generate(qr, { small: true });
+    let qrData = '';
+
+    // Create a promise to wait for the QR code generation
+    const waitForQRCode = new Promise((resolve) => {
+      // Generate and display the QR code in the terminal
+      client.on('qr', (qr) => {
+        console.log(qr);
+        qrData = qr;
+        qrcode.generate(qr, { small: true });
+        
+        // Resolve the promise once the QR code is generated
+        resolve();
+      });
     });
 
     // Listen for the 'authenticated' event to know when WhatsApp is ready
@@ -33,10 +42,12 @@ app.get('/qrcode', async (req, res) => {
 
     // Initialize the WhatsApp client
     client.initialize();
-    
-    res.send(`
-      <p>Scan the QR code with WhatsApp to continue.</p>
-    `);
+
+    // Wait for the QR code to be generated before sending the response
+    await waitForQRCode;
+
+    // Respond with QR code data as JSON
+    res.json({ qrCodeData: qrData });
   } else {
     res.send(`
       <div class="flex gap-5">
@@ -56,6 +67,46 @@ app.get('/qrcode', async (req, res) => {
     `);
   }
 });
+
+app.get('/chat/messages/:username', async (req, res) => {
+  if (isWhatsAppReady) {
+    try {
+      const { username } = req.params;
+
+      // Find the chat by username
+      const chat = await client.getChatById(username);
+
+      // Check if the chat exists
+      if (chat) {
+        // Define search options to retrieve messages
+        const searchOptions = {
+          limit: 10, // Number of messages to retrieve (adjust as needed)
+        };
+
+        // Fetch messages from the chat
+        const messages = await chat.fetchMessages(searchOptions);
+
+        // Extract relevant message information
+        const messageData = messages.map((message) => ({
+          id: message.id.id,
+          content: message.body,
+          timestamp: message.timestamp,
+          FromMe:message.id.fromMe
+        }));
+
+        res.json(messageData);
+      } else {
+        res.status(404).send('Chat not found');
+      }
+    } catch (error) {
+      console.error('Error retrieving chat messages:', error);
+      res.status(500).send('Error retrieving chat messages.');
+    }
+  } else {
+    res.status(400).send('WhatsApp is not yet ready.');
+  }
+});
+
 
 app.post('/send-message', async (req, res) => {
   const { message,DriverNumber } = req.body;

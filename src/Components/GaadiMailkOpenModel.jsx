@@ -1,77 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import CloseIcon from "@mui/icons-material/Close";
-// const GaadiMailkOpenModel = ({ row, setOpen, GCdata }) => {
-
-//   return (
-//     <div className="h-14 flex justify-between flex-col">
-//       <div className="flex justify-between items-center w-full border-b-4">
-//         <div>
-//           <span className="font-bold">{row?.veh_reg}</span>
-//         </div>
-//         <div>
-//           <button onClick={() => setOpen(false)}>
-//             <CloseIcon />
-//           </button>
-//         </div>
-//       </div>
-
-//       <div className=" w-full flex p-3 ">
-//         <div className="w-1/2  border-r-4">
-//           <div className="h-96 p-3 border-b-4 overflow-scroll">
-//             <span>
-//               <span className="font-bold"> All GC :-</span>
-//               {row.FinallData.length > 0 ? (
-//                 row.FinallData.map((res) => (
-//                   <div key={res}>
-//                     <li>{res.Data.DocketNo}</li>
-//                   </div>
-//                 ))
-//               ) : (
-//                 <span>No Docket Numbers</span>
-//               )}
-//             </span>
-//             <span>
-//               <span className="font-bold"> All Arrival:-</span>
-
-//               {Data.Arrival.map((res) =>
-//                 res.length > 0 ? (
-//                   res.map((row) => <li>{row.ArrivalData.ActualArrivalNo}</li>)
-//                 ) : (
-//                   <li>No Arrival</li>
-//                 )
-//               )}
-//             </span>
-//             <span>
-//               <span className="font-bold"> All EwayBill:-</span>
-//               {Data.EwayBill.map((res) =>
-//                 res.length > 0 ? (
-//                   res.map((row) => <li>{row.FinallData[0].data.ewayBillNo}</li>)
-//                 ) : (
-//                   <li>No Ewaybill</li>
-//                 )
-//               )}
-//             </span>
-//             <span>
-//               <span className="font-bold"> All Challan :-</span>
-//               {Data.Challan.map((res) =>
-//                 res.length > 0 ? (
-//                   res.map((row) => <li>{row.ChallanData.THCNO}</li>)
-//                 ) : (
-//                   <li>No Challan</li>
-//                 )
-//               )}
-//             </span>
-//           </div>
-//           <div className=" h-96 p-3">this is Div 2</div>
-//         </div>
-//         <div className="p-3">this is the Div 3</div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default GaadiMailkOpenModel;
-
 import React, { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import Alert from "./Alert";
@@ -81,7 +7,9 @@ import {
   AccordionDetails,
   Modal,
   Box,
+  CircularProgress,
 } from "@mui/material";
+import QRCode from "qrcode.react";
 import AutoComplte from "./AutoComplete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import TextField from "@mui/material/TextField";
@@ -116,8 +44,11 @@ const GaadiMailkOpenModel = ({ row, setOpen }) => {
   }, []);
   const [Chilopen, setChildOpen] = React.useState(false);
   const [JkData, setJkData] = useState([]);
-  const [Uuid, setuuid] = useState("");
+  const [AllChats, setAllChats] = useState([]);
+  const [QrData, setQrData] = useState("");
+  const [LoadQrData, setLoadQrData] = useState(false);
   const [Status, setStatus] = useState(false);
+  const [ShowChats, setShowChats] = useState(false);
 
   const receiveDataFromChild = () => {
     setChildOpen(false);
@@ -184,9 +115,40 @@ const GaadiMailkOpenModel = ({ row, setOpen }) => {
     setJkData(response.data.data);
   };
 
+  const QrCodeFetch = async () => {
+    try {
+      setLoadQrData(true);
+      const response = await axios.get("http://localhost:3000/qrcode");
+      console.log(response.data);
+      if (response.data.qrCodeData) {
+        setLoadQrData(false);
+        setQrData(response.data.qrCodeData);
+      } else {
+        setLoadQrData(false);
+      }
+    } catch (e) {
+      console.log(e.message);
+      setLoadQrData(false);
+    }
+  };
+
+  const FetchAllChats = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/chat/messages/917718959200@c.us"
+      );
+      console.log(response.data);
+      setAllChats(response.data);
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+
   useEffect(() => {
     LocationApi();
     JkTyreFetch();
+    QrCodeFetch();
+    FetchAllChats();
   }, []);
 
   const Materials = (a) => {
@@ -266,9 +228,29 @@ const GaadiMailkOpenModel = ({ row, setOpen }) => {
       <div className="w-full h-1 bg-gray-300"></div>
       <div className="w-full h-full flex">
         <div className="w-1/2 p-2 border-r-4 border-gray-300">
-          <h1 className="text-xl text-gray-500 font-bold">
-            Current Trip Point Info
-          </h1>
+          <div className="flex justify-between">
+            <h1 className="text-xl text-gray-500 font-bold">
+              Current Trip Point Info
+            </h1>
+            {!ShowChats && (
+              <button
+                onClick={() => setShowChats(!ShowChats)}
+                className="bg-blue-600 font-bold text-white p-2 rounded-lg"
+              >
+                {" "}
+                Show Chats{" "}
+              </button>
+            )}
+            {ShowChats && (
+              <button
+                onClick={() => setShowChats(!ShowChats)}
+                className="bg-red-600 font-bold text-white p-2 rounded-lg"
+              >
+                {" "}
+                Hide Chats{" "}
+              </button>
+            )}
+          </div>
           <br />
           <hr />
           <br />
@@ -336,7 +318,7 @@ const GaadiMailkOpenModel = ({ row, setOpen }) => {
                 </div>
 
                 {/* <div className="w-full border-t-4 p-2">
-                  <span className="font-bold">Arrival Details:</span> <br />
+                  <span className="font-bold">Arrival Details:</span> <br />  
                   {CombineData.Arrival?.sort(
                     (a, b) =>
                       new Date(b?.ArrivalData?.ActualArrivalNo) -
@@ -681,102 +663,131 @@ const GaadiMailkOpenModel = ({ row, setOpen }) => {
             <br />
           </div>
         </div>
-
-        <div className=" w-1/2 p-2  border-gray-300 flex flex-col gap-3">
+        <div></div>
+        {ShowChats && (
           <div>
-            {!ShowMap ? (
+            <div className="bg-green-950 text-white font-bold w-[45vw] h-[80vh]">
+              {AllChats.length > 0 &&
+                AllChats.map((res) => {
+                  return (
+                    <>
+                      <div className="flex flex-col ">
+                        <div
+                          className={`${
+                            res.FromMe ? "text-right" : "text-left "
+                          } mt-3 mr-3 ml-3`}
+                        >
+                          <span
+                            className={`${
+                              res.FromMe
+                                ? "text-right bg-green-700"
+                                : "text-left bg-slate-500 "
+                            } p-1  rounded-lg rounded-br-none`}
+                          >
+                            {res.content}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+        {!ShowChats && (
+          <div className=" w-1/2 p-2  border-gray-300 flex flex-col gap-3">
+            <div>
+              {!ShowMap ? (
+                <button
+                  className="text-blue-500"
+                  onClick={() => setShowMap(true)}
+                >
+                  Show Map
+                </button>
+              ) : (
+                <button
+                  className="text-blue-500"
+                  onClick={() => setShowMap(false)}
+                >
+                  Hide Map
+                </button>
+              )}
+
+              {ShowMap && MapData.Fromlat && MapData.Fromlong ? (
+                <MapComponent
+                  fromlat={Number(MapData.Fromlat) || 25.276987}
+                  fromlong={Number(MapData.Fromlong) || 55.296249}
+                  tolat={Number(MapData.Tolat)}
+                  tolong={Number(MapData.Tolong)}
+                  height={"400px"}
+                  VehicleNumber={row.veh_reg}
+                  Material={Materials(row.FinallData[0].Data?.GCStatus)}
+                />
+              ) : (
+                " Map is Loading ..."
+              )}
+            </div>
+            <div className=" text-gray-500 p-5  flex flex-col gap-5">
+              {" "}
+              <h1 className="text-2xl font-bold"> Current Location </h1>
+              <div className="flex gap-5">
+                {LoadQrData && <CircularProgress />}
+
+                {!LoadQrData && QrData != "" && <QRCode value={QrData} />}
+
+                {!LoadQrData && QrData == "" && (
+                  <WhatsAppSender
+                    DriverNumber={
+                      row.VehicleData?.driverData?.Telno || "7718959200"
+                    }
+                  />
+                )}
+              </div>
+              <div>
+                <button className="bg-yellow-300 w-24 text-black rounded-md h-8">
+                  {" "}
+                  Update
+                </button>{" "}
+                &nbsp;
+                <span>TotalKms:- {row?.FinallData[0].Data.TotalKM} kms.</span>
+              </div>
+              <div>
+                <button
+                  className="bg-blue-700 w-36 rounded-md  h-8 text-white hover:bg-blue-900"
+                  onClick={() => setChildOpen(true)}
+                >
+                  Update Location
+                </button>
+                <Modal
+                  open={Chilopen}
+                  onClose={() => setChildOpen(false)}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box sx={style}>
+                    <AutoComplte status={receiveDataFromChild} />
+                  </Box>
+                </Modal>
+                &nbsp;
+                <span>here will be the location showing .....</span>
+              </div>
+            </div>
+            {!row.VehicleStatus && (
               <button
-                className="text-blue-500"
-                onClick={() => setShowMap(true)}
+                className="bg-blue-600 h-10 font-bold text-white rounded-lg "
+                onClick={UpdateTheStatus}
               >
-                Show Map
-              </button>
-            ) : (
-              <button
-                className="text-blue-500"
-                onClick={() => setShowMap(false)}
-              >
-                Hide Map
+                Update the Status
               </button>
             )}
 
-            {/* {ShowMap && MapData.Fromlat && MapData.Fromlong ? (
-              <MapComponent
-                fromlat={Number(MapData.Fromlat) || 25.276987}
-                fromlong={Number(MapData.Fromlong) || 55.296249}
-                tolat={Number(MapData.Tolat)}
-                tolong={Number(MapData.Tolong)}
-                height={"400px"}
-                VehicleNumber={row.veh_reg}
-                Material={Materials(row.FinallData[0].Data?.GCStatus)}
-              />
-            ) : (
-              " Map is Loading ..."
-            )} */}
+            <VehicleUpdate
+              status={row.VehicleStatus}
+              row={row}
+            />
+            <br />
           </div>
-          <div className=" text-gray-500 p-5  flex flex-col gap-5">
-            {" "}
-            <h1 className="text-2xl font-bold"> Current Location </h1>
-            <div className="flex gap-5">
-              {/* <input
-                type="text"
-                className=" w-60 border-2 border-black h-10 p-2 rounded-lg"
-                placeholder="Send Whatsapp Message.."
-              />
-              <button className="bg-green-600 p-2 rounded-lg text-white font-bold">
-                💬 Send Message
-              </button> */}
-
-              <WhatsAppSender
-                DriverNumber={
-                  row.VehicleData?.driverData?.Telno || "7718959200"
-                }
-              />
-            </div>
-            <div>
-              <button className="bg-yellow-300 w-24 text-black rounded-md h-8">
-                {" "}
-                Update
-              </button>{" "}
-              &nbsp;
-              <span>TotalKms:- {row?.FinallData[0].Data.TotalKM} kms.</span>
-            </div>
-            <div>
-              <button
-                className="bg-blue-700 w-36 rounded-md  h-8 text-white hover:bg-blue-900"
-                onClick={() => setChildOpen(true)}
-              >
-                Update Location
-              </button>
-              <Modal
-                open={Chilopen}
-                onClose={() => setChildOpen(false)}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-              >
-                <Box sx={style}>
-                  <AutoComplte status={receiveDataFromChild} />
-                </Box>
-              </Modal>
-              &nbsp;
-              <span>here will be the location showing .....</span>
-            </div>
-          </div>
-          {!row.VehicleStatus && (
-            <button
-              className="bg-blue-600 h-10 font-bold text-white rounded-lg "
-              onClick={UpdateTheStatus}
-            >
-              Update the Status
-            </button>
-          )}
-
-          <VehicleUpdate
-            status={row.VehicleStatus}
-            row={row}
-          />
-          <br />
-        </div>
+        )}
       </div>
       {Status ? (
         <Alert

@@ -88,4 +88,6 @@ async function SecondMergedCollection(){
       console.error('Error merging and inserting data:', err);
     }
 }
-mergeAndInsert();
+SecondMergedCollection()
+
+// mergeAndInsert();

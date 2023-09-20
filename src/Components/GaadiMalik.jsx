@@ -1,44 +1,49 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import { LinearProgress, Button, Modal, Box, TextField } from "@mui/material";
+import {
+  LinearProgress,
+  Button,
+  Modal,
+  Box,
+  TextField,
+  Autocomplete,
+} from "@mui/material";
 import axios from "axios";
 import GaadiMailkOpenModel from "./GaadiMailkOpenModel";
+
 const GaadiMalik = () => {
   const [loading, setLoading] = useState(false);
   const [GCdata, setGCdata] = useState([]);
-  const [Filter, setFilter] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const FetchApi = () => {
+  const [selectedStatus, setSelectedStatus] = useState("All");
+
+  const Type = [
+    { title: "All" },
+    { title: "Intransit" },
+    { title: "AtPickup" },
+    { title: "At Unloading" },
+    { title: "Available" },
+    { title: "Off duty" },
+  ];
+  const fetchData = () => {
     setLoading(true);
-    console.log(Filter);
-    let config = {
-      method: "get",
-      maxBodyLength: Infinity,
-      url: "http://localhost:5050/Vehicle/get",
-      headers: {},
-    };
+    const apiUrl = "http://localhost:5050/Vehicle/get";
 
     axios
-      .request(config)
+      .get(apiUrl)
       .then((response) => {
-        const res = response.data.data.filter((item) => {
-          if (Filter == "") {
-            return true; // Show all items when Filter is empty
-          } else {
-            return item.veh_reg.includes(Filter);
-          }
-        });
-
-        setGCdata(res);
+        const data = response.data.data;
+        setGCdata(data);
         setLoading(false);
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
+        setLoading(false);
       });
   };
 
   useEffect(() => {
-    FetchApi();
+    fetchData();
   }, []);
 
   const columns = [
@@ -139,14 +144,78 @@ const GaadiMalik = () => {
       width: "120px",
     },
   ];
-  const searchFilteredData = GCdata.filter((row) =>
-    row?.veh_reg.toLowerCase().includes(searchInput.toLowerCase())
-  );
+  const UpdateButton = ({ row }) => {
+    const style = {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      bgcolor: "background.paper",
+      border: "2px solid #000",
+      boxShadow: 24,
+    };
+    const [open, setOpen] = useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
+    return (
+      <div>
+        <Button onClick={handleOpen}>Update</Button>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box
+            sx={style}
+            className="w-[97vw] h-full m-3 p-5 overflow-auto"
+          >
+            <GaadiMailkOpenModel
+              row={row}
+              setOpen={setOpen}
+            />
+          </Box>
+        </Modal>
+      </div>
+    );
+  };
+
+  const handleStatusFilter = (status) => {
+    setSelectedStatus(status);
+  };
+
+  const filteredData = GCdata.filter((row) => {
+    const vehicleStatus = row?.VehicleStatus;
+    const regMatch = row?.veh_reg
+      .toLowerCase()
+      .includes(searchInput.toLowerCase());
+    const statusMatch =
+      selectedStatus === "All" ||
+      (vehicleStatus &&
+        vehicleStatus.toLowerCase() === selectedStatus.toLowerCase());
+
+    return regMatch && statusMatch;
+  });
 
   return (
     <div>
+      <div className="flex h-10 m-3 font-bold">
+        {Type.map((res) => (
+          <button
+            key={res.title}
+            className={`hover:bg-slate-200 p-2 h-10 hover:border-b-2 border-blue-950 text-lg uppercase ${
+              selectedStatus === res.title ? "bg-slate-200" : ""
+            }`}
+            onClick={() => handleStatusFilter(res.title)}
+          >
+            {res.title}
+          </button>
+        ))}
+      </div>
       {loading ? <LinearProgress /> : ""}
-      <br />
+
       <div className="p-3">
         <TextField
           label="Search Vehicle Number"
@@ -155,7 +224,7 @@ const GaadiMalik = () => {
         />
         <DataTable
           columns={columns}
-          data={searchFilteredData}
+          data={filteredData}
           pagination
         />
       </div>
