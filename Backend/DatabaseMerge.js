@@ -18,7 +18,7 @@ async function mergeAndInsert() {
     const aggregationPipeline =  [
         {
             $match: {
-              FetchDate: "Aug-2023",
+              FetchDate: "Sep-2023",
             },
           },
           {

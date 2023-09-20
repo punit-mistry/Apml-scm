@@ -255,8 +255,8 @@ axios
     console.log(error);
   });
 }
- startFetchingData() 
-// Ewaybill()
+ startFetchingData() // this is one for the gc 
+// Ewaybill()   // this is one for the ewaybill
 
 setInterval(()=>{
     console.log(new Date().toLocaleString())

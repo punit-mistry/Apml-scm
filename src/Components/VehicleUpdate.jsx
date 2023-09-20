@@ -8,25 +8,21 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
+
 const VehicleUpdate = ({ status, row }) => {
   const [VehicleStatusData, setVehicleStatusData] = useState([]);
-
   const [dateTimeValues, setDateTimeValues] = useState({
-    arrivedAt: VehicleStatusData[0]?.arrivedAt
-      ? new Date(VehicleStatusData[0].arrivedAt).toISOString().slice(0, -1)
-      : "",
-    gateIn: VehicleStatusData[0]?.gateIn
-      ? new Date(VehicleStatusData[0].gateIn).toISOString().slice(0, -1)
-      : "",
-    loadingStart: VehicleStatusData[0]?.loadingStart
-      ? new Date(VehicleStatusData[0].loadingStart).toISOString().slice(0, -1)
-      : "",
-    loadingEnd: VehicleStatusData[0]?.loadingEnd
-      ? new Date(VehicleStatusData[0].loadingEnd).toISOString().slice(0, -1)
-      : "",
-    departure: VehicleStatusData[0]?.departure
-      ? new Date(VehicleStatusData[0].departure).toISOString().slice(0, -1)
-      : "",
+    arrivedAt: "",
+    gateIn: "",
+    loadingStart: "",
+    loadingEnd: "",
+    departure: "",
+    markedArrival: "",
+    UnLodingPoint: "",
+    GateInUnloading: "",
+    UnloadingStart: "",
+    UnloadingEnd: "",
+    UnloadingDeparted: "",
   });
 
   const CallApi = async () => {
@@ -34,6 +30,47 @@ const VehicleUpdate = ({ status, row }) => {
       `http://localhost:5050/VehicleStatus/get?filter={"uuid":"${row.uuid}"}`
     );
     setVehicleStatusData(response.data.data);
+
+    // Set initial dateTimeValues here
+    if (response.data.data.length > 0) {
+      const firstData = response.data.data[0];
+      setDateTimeValues({
+        arrivedAt: firstData.arrivedAt
+          ? new Date(firstData.arrivedAt).toISOString().slice(0, -1)
+          : "",
+        gateIn: firstData.gateIn
+          ? new Date(firstData.gateIn).toISOString().slice(0, -1)
+          : "",
+        loadingStart: firstData.loadingStart
+          ? new Date(firstData.loadingStart).toISOString().slice(0, -1)
+          : "",
+        loadingEnd: firstData.loadingEnd
+          ? new Date(firstData.loadingEnd).toISOString().slice(0, -1)
+          : "",
+        departure: firstData.departure
+          ? new Date(firstData.departure).toISOString().slice(0, -1)
+          : "",
+        markedArrival: firstData.markedArrival
+          ? new Date(firstData.markedArrival).toISOString().slice(0, -1)
+          : "",
+
+        UnLodingPoint: firstData.UnLodingPoint
+          ? new Date(firstData.UnLodingPoint).toISOString().slice(0, -1)
+          : "",
+        GateInUnloading: firstData.GateInUnloading
+          ? new Date(firstData.GateInUnloading).toISOString().slice(0, -1)
+          : "",
+        UnloadingStart: firstData.UnloadingStart
+          ? new Date(firstData.UnloadingStart).toISOString().slice(0, -1)
+          : "",
+        UnloadingEnd: firstData.UnloadingEnd
+          ? new Date(firstData.UnloadingEnd).toISOString().slice(0, -1)
+          : "",
+        UnloadingDeparted: firstData.UnloadingDeparted
+          ? new Date(firstData.UnloadingDeparted).toISOString().slice(0, -1)
+          : "",
+      });
+    }
   };
 
   useEffect(() => {
@@ -71,14 +108,13 @@ const VehicleUpdate = ({ status, row }) => {
       console.error(err.message);
     }
   };
-
   return (
     <>
       {console.log(status)}
       {status === "AtPickup" && (
         <div className="border text-black border-gray-500 rounded-lg h-full p-5">
           {" "}
-          <h1 className="text-xl font-bold "> Delivery Info </h1>
+          <h1 className="text-xl font-bold "> Delivery Info</h1>
           <br />
           <div className="flex  flex-col gap-5">
             <Accordion className="bg-blue-100 border-2 border-gray-600 rounded-lg">
@@ -185,10 +221,18 @@ const VehicleUpdate = ({ status, row }) => {
               <AccordionDetails className="">
                 <div className="flex flex-col gap-5 ">
                   <div className="flex justify-between">
-                    <label className="font-bold ">Marked Arrived: </label>
+                    <label className="font-bold ">Marked Arrived:</label>
                     <input
                       type="datetime-local"
-                      className="text-red-500"
+                      name="markedArrival"
+                      value={
+                        dateTimeValues.markedArrival
+                          ? new Date(dateTimeValues.markedArrival)
+                              .toISOString()
+                              .slice(0, -1)
+                          : ""
+                      }
+                      onChange={handleInputChange}
                     />
                   </div>
                 </div>
@@ -210,28 +254,80 @@ const VehicleUpdate = ({ status, row }) => {
                     <label className="font-bold ">At Unloading Point: </label>
                     <input
                       type="datetime-local"
-                      className="text-red-500"
+                      name="UnLodingPoint"
+                      value={
+                        dateTimeValues.UnLodingPoint
+                          ? new Date(dateTimeValues.UnLodingPoint)
+                              .toISOString()
+                              .slice(0, -1)
+                          : ""
+                      }
+                      onChange={handleInputChange}
                     />
                   </div>
 
                   <div className="flex justify-between">
                     <label className="font-bold ">Unloading Gate in: </label>
-                    <input type="datetime-local" />
+                    <input
+                      type="datetime-local"
+                      name="GateInUnloading"
+                      value={
+                        dateTimeValues.GateInUnloading
+                          ? new Date(dateTimeValues.GateInUnloading)
+                              .toISOString()
+                              .slice(0, -1)
+                          : ""
+                      }
+                      onChange={handleInputChange}
+                    />
                   </div>
 
                   <div className="flex justify-between">
                     <label className="font-bold ">UnLoading Start: </label>
-                    <input type="datetime-local" />
+                    <input
+                      type="datetime-local"
+                      name="UnloadingStart"
+                      value={
+                        dateTimeValues.UnloadingStart
+                          ? new Date(dateTimeValues.UnloadingStart)
+                              .toISOString()
+                              .slice(0, -1)
+                          : ""
+                      }
+                      onChange={handleInputChange}
+                    />
                   </div>
 
                   <div className="flex justify-between">
                     <label className="font-bold ">UnLoading End: </label>
-                    <input type="datetime-local" />
+                    <input
+                      type="datetime-local"
+                      name="UnloadingEnd"
+                      value={
+                        dateTimeValues.UnloadingEnd
+                          ? new Date(dateTimeValues.UnloadingEnd)
+                              .toISOString()
+                              .slice(0, -1)
+                          : ""
+                      }
+                      onChange={handleInputChange}
+                    />
                   </div>
 
                   <div className="flex justify-between">
                     <label className="font-bold ">Departure: </label>
-                    <input type="datetime-local" />
+                    <input
+                      type="datetime-local"
+                      name="UnloadingDeparted"
+                      value={
+                        dateTimeValues.UnloadingDeparted
+                          ? new Date(dateTimeValues.UnloadingDeparted)
+                              .toISOString()
+                              .slice(0, -1)
+                          : ""
+                      }
+                      onChange={handleInputChange}
+                    />
                   </div>
                 </div>
               </AccordionDetails>

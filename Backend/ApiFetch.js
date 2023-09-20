@@ -38,62 +38,62 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 
-app.get("/qrcode", async (req, res) => {
-  if (!isWhatsAppReady) {
-    // Generate and display the QR code in the terminal
-    client.on('qr', (qr) => {
-      console.log(qr);
-      qrcode.generate(qr, { small: true });
-    });
+// app.get("/qrcode", async (req, res) => {
+//   if (!isWhatsAppReady) {
+//     // Generate and display the QR code in the terminal
+//     client.on('qr', (qr) => {
+//       console.log(qr);
+//       qrcode.generate(qr, { small: true });
+//     });
 
-    // Listen for the 'authenticated' event to know when WhatsApp is ready
-    client.on('authenticated', (session) => {
-      console.log('WhatsApp authenticated');
-      isWhatsAppReady = true;
-    });
+//     // Listen for the 'authenticated' event to know when WhatsApp is ready
+//     client.on('authenticated', (session) => {
+//       console.log('WhatsApp authenticated');
+//       isWhatsAppReady = true;
+//     });
 
-    // Initialize the WhatsApp client
-    client.initialize();
+//     // Initialize the WhatsApp client
+//     client.initialize();
     
-    res.send(`
-      <p>Scan the QR code with WhatsApp to continue.</p>
-    `);
-  } else {
-    res.send(`
-      <div class="flex gap-5">
-        <input
-          type="text"
-          className="w-60 border-2 border-black h-10 p-2 rounded-lg"
-          placeholder="Send WhatsApp Message.."
-          id="messageInput"
-        />
-        <button
-          className="bg-green-600 p-2 rounded-lg text-white font-bold"
-          id="sendMessageButton"
-        >
-          💬 Send Message
-        </button>
-      </div>
-    `);
-  }
-});
+//     res.send(`
+//       <p>Scan the QR code with WhatsApp to continue.</p>
+//     `);
+//   } else {
+//     res.send(`
+//       <div class="flex gap-5">
+//         <input
+//           type="text"
+//           className="w-60 border-2 border-black h-10 p-2 rounded-lg"
+//           placeholder="Send WhatsApp Message.."
+//           id="messageInput"
+//         />
+//         <button
+//           className="bg-green-600 p-2 rounded-lg text-white font-bold"
+//           id="sendMessageButton"
+//         >
+//           💬 Send Message
+//         </button>
+//       </div>
+//     `);
+//   }
+// });
 
-app.post("/send-message", async (req, res) => {
-  const { message, DriverNumber } = req.body;
-  const targetContact = `91${DriverNumber}@c.us`; // Replace with the recipient's phone number
-  console.log(req.body);
-  if (isWhatsAppReady) {
-    try {
-      await client.sendMessage(targetContact, message);
-      res.send('Message sent successfully!');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      res.status(500).send('Error sending message.');
-    }
-  } else {
-    res.status(400).send('WhatsApp is not yet ready.');
-  }
-});
+// app.post("/send-message", async (req, res) => {
+//   const { message, DriverNumber } = req.body;
+//   const targetContact = `91${DriverNumber}@c.us`; // Replace with the recipient's phone number
+//   console.log(req.body);
+//   if (isWhatsAppReady) {
+//     try {
+//       await client.sendMessage(targetContact, message);
+//       res.send('Message sent successfully!');
+//     } catch (error) {
+//       console.error('Error sending message:', error);
+//       res.status(500).send('Error sending message.');
+//     }
+//   } else {
+//     res.status(400).send('WhatsApp is not yet ready.');
+//   }
+// });
 app.get("/gc/get", async (req, res) => {
 
       MongoClient.connect(mongouri)
@@ -144,7 +144,7 @@ app.get("/VehicleStatus/get", async (req, res) => {
   
     try {
       // Update the document in the "MergedData" collection
-      const updateResult = await db.collection("MergedData").updateOne(
+      const updateResult = await db.collection("VehicleWiseMergedData").updateOne(
         { _id:new mongodb.ObjectId(id) },
         { $set: updatedData }
       );
@@ -224,6 +224,31 @@ app.get("/Vehicle/get", async (req, res) => {
   });
 
 
+
+app.get("/JKTyre", async (req, res) => {
+
+  const Filter = JSON.parse(req.query.filter);
+
+      MongoClient.connect(mongouri)
+        .then(async (client) => {
+          // DATABASE CONNECTION
+          const db = client.db("JK_tyre");
+          // COLLECTION CONNECTION
+          const collection = db.collection("JK");
+          const limit = 5000; // Limit to 1000 documents per request
+          const data = await collection.find(Filter).limit(limit).toArray();
+  
+          res.status(200).json({
+            data,
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(500).json({ error: err });
+        });
+  });
+
+
  app.post("/placeandroutes",async(req, res) => {
   const body = req.body;
   try {
@@ -242,13 +267,13 @@ app.get("/Vehicle/get", async (req, res) => {
   }
  }) 
 
-// WhatsApp Client Event Handlers
-client.on('ready', () => {
-  console.log('WhatsApp Client is ready!');
-  isWhatsAppReady = true;
-});
+// // WhatsApp Client Event Handlers
+// client.on('ready', () => {
+//   console.log('WhatsApp Client is ready!');
+//   isWhatsAppReady = true;
+// });
 
-client.initialize();
+// client.initialize();
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

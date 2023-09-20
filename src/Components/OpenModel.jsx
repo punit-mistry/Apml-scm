@@ -20,6 +20,7 @@ import uuid from "react-uuid";
 import VehicleUpdate from "./VehicleUpdate";
 const OpenModal = ({ row, setOpen }) => {
   const [Chilopen, setChildOpen] = React.useState(false);
+  const [JkData, setJkData] = useState([]);
   const [Uuid, setuuid] = useState("");
   const [Status, setStatus] = useState(false);
 
@@ -80,8 +81,17 @@ const OpenModal = ({ row, setOpen }) => {
         console.log(error);
       });
   };
+
+  const JkTyreFetch = async () => {
+    const response = await axios.get(
+      `http://localhost:5050/JKTyre?filter={"vehicle": "${row.Data.VehicleNo}"}`
+    );
+    setJkData(response.data.data);
+  };
+
   useEffect(() => {
     LocationApi();
+    JkTyreFetch();
   }, []);
 
   const Materials = (a) => {
@@ -247,6 +257,79 @@ const OpenModal = ({ row, setOpen }) => {
           <br />
           <div></div>
           <div className="  p-2 flex gap-3 flex-col">
+            {JkData.length > 0 && (
+              <Accordion className="bg-blue-100 border-2 border-gray-600 rounded-lg">
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <h1 className="text-lg font-bold">JKTyre Details:</h1>
+                </AccordionSummary>
+                <AccordionDetails className=" flex justify-center items-center text-center">
+                  <table className="w-[40vw] ">
+                    <tr className="border border-black">
+                      <th className="border border-black">Last Inspe.</th>
+                      <th className="border border-black">Location</th>
+                      <th className="border border-black">
+                        No. Tyre / Tyre No
+                      </th>
+                      <th className="border border-black">Postion </th>
+                      <th className="border border-black">Due.</th>
+                    </tr>
+                    {JkData.map((res) => {
+                      return (
+                        <tr
+                          className={`border border-black ${
+                            new Date(res.inspectionDate)
+                              .toISOString()
+                              .split("T")[0] >=
+                            new Date(new Date() - 30 * 24 * 60 * 60 * 1000) // 30 days in milliseconds
+                              .toISOString()
+                              .split("T")[0]
+                              ? "bg-red-600 text-white"
+                              : ""
+                          }`}
+                        >
+                          <td className="border border-black p-1">
+                            {
+                              new Date(res.inspectionDate)
+                                .toISOString()
+                                .split("T")[0]
+                            }
+                          </td>
+                          <td className="border border-black p-1">{res.hub}</td>
+
+                          <td className="border border-black">
+                            {res.inspectedTyres.map((res, key) => {
+                              return (
+                                <>
+                                  {`⚙️${key}:${res.pressure} :: ${res.stencilNo}`}
+                                  <br />
+                                </>
+                              );
+                            })}
+                          </td>
+                          <td className="border border-black">
+                            {res.inspectedTyres.map((res, key) => {
+                              return (
+                                <>
+                                  {`${res.position} `}
+                                  <br />
+                                </>
+                              );
+                            })}
+                          </td>
+                          <td className={`animate-pulse font-bold }`}>
+                            {calculateDateDifference(res.inspectionDate)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </table>
+                </AccordionDetails>
+              </Accordion>
+            )}
             <Accordion className="bg-blue-100 border-2 border-gray-600 rounded-lg">
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
@@ -446,7 +529,7 @@ const OpenModal = ({ row, setOpen }) => {
 
               <WhatsAppSender
                 DriverNumber={
-                  row.VehicleData?.driverData?.Telno || "8286075880"
+                  row.VehicleData?.driverData?.Telno || "7718959200"
                 }
               />
             </div>
@@ -504,3 +587,17 @@ const OpenModal = ({ row, setOpen }) => {
 };
 
 export default OpenModal;
+
+function calculateDateDifference(inspectionDate) {
+  const currentDate = new Date();
+  const inspectionDateObj = new Date(inspectionDate);
+
+  // Calculate the difference in milliseconds
+  const differenceInMilliseconds = currentDate - inspectionDateObj;
+
+  // Convert milliseconds to days (1 day = 24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
+  const differenceInDays = differenceInMilliseconds / (24 * 60 * 60 * 1000);
+
+  // Round the difference to the nearest whole number
+  return Math.round(differenceInDays);
+}
